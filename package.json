@@ -1,13 +1,343 @@
+// ROOT package.json
 {
   "name": "afriproperty-platform",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "Fractional Real Estate Tokenization Platform for African Markets",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs"
+  "scripts": {
+    "compile": "truffle compile",
+    "test": "truffle test",
+    "migrate:dev": "truffle migrate --network development",
+    "migrate:mumbai": "truffle migrate --network polygon_mumbai",
+    "migrate:polygon": "truffle migrate --network polygon",
+    "verify": "truffle run verify AfriPropertyPlatform",
+    "console": "truffle console",
+    "frontend:install": "cd frontend && npm install",
+    "frontend:start": "cd frontend && npm start",
+    "frontend:build": "cd frontend && npm run build",
+    "deploy": "./deploy.sh",
+    "quickstart": "./quickstart.sh"
+  },
+  "keywords": [
+    "blockchain",
+    "real-estate",
+    "tokenization",
+    "africa",
+    "ethereum",
+    "defi",
+    "web3"
+  ],
+  "author": "AfriProperty Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@truffle/hdwallet-provider": "^2.1.15",
+    "truffle": "^5.11.5",
+    "truffle-plugin-verify": "^0.6.7",
+    "chai": "^4.3.10",
+    "chai-as-promised": "^7.1.1"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.3",
+    "dotenv": "^16.3.1",
+    "web3": "^1.10.3"
+  }
 }
+
+// frontend/package.json
+{
+  "name": "afriproperty-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "web3": "^1.10.3"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
+
+// frontend/public/index.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2C5F2D" />
+    <meta
+      name="description"
+      content="Invest in African real estate from $50. Fractional ownership through blockchain technology."
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>AfriProperty - Real Estate Tokenization Platform</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
+
+// frontend/src/index.js
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+// frontend/src/index.css
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+// truffle-config.js
+require('dotenv').config();
+const HDWalletProvider = require('@truffle/hdwallet-provider');
+
+module.exports = {
+  networks: {
+    development: {
+      host: "127.0.0.1",
+      port: 8545,
+      network_id: "*"
+    },
+    polygon_mumbai: {
+      provider: () => new HDWalletProvider(
+        process.env.PRIVATE_KEY || process.env.MNEMONIC,
+        `https://rpc-mumbai.maticvigil.com`
+      ),
+      network_id: 80001,
+      confirmations: 2,
+      timeoutBlocks: 200,
+      skipDryRun: true,
+      chainId: 80001
+    },
+    polygon: {
+      provider: () => new HDWalletProvider(
+        process.env.PRIVATE_KEY || process.env.MNEMONIC,
+        `https://polygon-rpc.com`
+      ),
+      network_id: 137,
+      confirmations: 2,
+      timeoutBlocks: 200,
+      skipDryRun: true,
+      gasPrice: 50000000000,
+      chainId: 137
+    }
+  },
+  compilers: {
+    solc: {
+      version: "0.8.20",
+      settings: {
+        optimizer: {
+          enabled: true,
+          runs: 200
+        }
+      }
+    }
+  },
+  plugins: ['truffle-plugin-verify'],
+  api_keys: {
+    polygonscan: process.env.POLYGONSCAN_API_KEY
+  }
+};
+
+// migrations/1_initial_migration.js
+const Migrations = artifacts.require("Migrations");
+
+module.exports = function (deployer) {
+  deployer.deploy(Migrations);
+};
+
+// migrations/2_deploy_contracts.js
+const AfriPropertyPlatform = artifacts.require("AfriPropertyPlatform");
+
+module.exports = async function (deployer, network, accounts) {
+  const feeCollector = process.env.FEE_COLLECTOR_ADDRESS || accounts[0];
+  
+  console.log("Deploying AfriPropertyPlatform...");
+  console.log("Network:", network);
+  console.log("Fee Collector:", feeCollector);
+  
+  await deployer.deploy(AfriPropertyPlatform, feeCollector);
+  const platform = await AfriPropertyPlatform.deployed();
+  
+  console.log("AfriPropertyPlatform deployed at:", platform.address);
+  
+  if (network === "development" || network === "polygon_mumbai") {
+    console.log("Setting up roles for", network);
+    const OPERATOR_ROLE = web3.utils.keccak256("OPERATOR_ROLE");
+    const VERIFIER_ROLE = web3.utils.keccak256("VERIFIER_ROLE");
+    
+    if (accounts.length > 1) {
+      await platform.grantRole(OPERATOR_ROLE, accounts[1]);
+      await platform.grantRole(VERIFIER_ROLE, accounts[2] || accounts[1]);
+      console.log("Roles granted");
+    }
+  }
+  
+  console.log("\n=== Deployment Summary ===");
+  console.log("Platform Address:", platform.address);
+  console.log("Platform Fee:", (await platform.platformFeePercentage()).toString(), "basis points");
+  console.log("========================\n");
+};
+
+// .env.example
+# Wallet Configuration
+PRIVATE_KEY=your_private_key_without_0x_prefix
+MNEMONIC=your twelve word mnemonic phrase here
+
+# Network Configuration
+INFURA_KEY=your_infura_project_id
+ALCHEMY_KEY=your_alchemy_api_key
+
+# Contract Configuration
+FEE_COLLECTOR_ADDRESS=0x0000000000000000000000000000000000000000
+
+# API Keys
+POLYGONSCAN_API_KEY=your_polygonscan_api_key
+ETHERSCAN_API_KEY=your_etherscan_api_key
+
+# Frontend Configuration (for frontend/.env)
+REACT_APP_PLATFORM_ADDRESS=0x0000000000000000000000000000000000000000
+REACT_APP_NETWORK_ID=80001
+REACT_APP_CHAIN_NAME=Polygon Mumbai Testnet
+
+// .gitignore
+node_modules/
+build/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+coverage/
+.truffle/
+artifacts/
+cache/
+package-lock.json
+yarn.lock
+
+// README.md
+# AfriProperty - Real Estate Tokenization Platform
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+> Democratizing real estate investment in Africa through blockchain technology
+
+## Quick Start
+
+### Prerequisites
+- Node.js 16+
+- npm or yarn
+- MetaMask wallet
+
+### Installation
+
+```bash
+# Clone repository
+git clone https://github.com/yourusername/afriproperty-platform.git
+cd afriproperty-platform
+
+# Install dependencies
+npm install
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your settings
+
+# Compile contracts
+npm run compile
+
+# Run tests
+npm test
+
+# Start local development
+npm run quickstart
+```
+
+### Deploy to Testnet (FREE)
+
+```bash
+# Get test MATIC from faucets:
+# https://faucet.polygon.technology/
+# https://mumbaifaucet.com/
+
+# Deploy to Mumbai
+npm run migrate:mumbai
+
+# Deploy frontend
+cd frontend
+npm install
+npm start
+```
+
+## Documentation
+
+- [Technical Specification](docs/TECHNICAL_SPEC.md)
+- [User Guide](docs/USER_GUIDE.md)
+- [API Reference](docs/API_REFERENCE.md)
+
+## Features
+
+- 🏘️ Fractional ownership from $50
+- 💰 Automated rental distribution
+- 🔐 Secure smart contracts
+- 📱 Mobile-friendly interface
+- 🌍 Pan-African properties
+
+## License
+
+MIT License - see LICENSE file
+
+## Contact
+
+- Website: https://afriproperty.io
+- Email: info@afriproperty.io
+- Twitter: @AfriProperty
+
+---
+
+**Made with ❤️ for Africa**
