@@ -10,24 +10,26 @@ module.exports = {
     },
     polygon_mumbai: {
       provider: () => new HDWalletProvider(
-        process.env.PRIVATE_KEY,
+        process.env.PRIVATE_KEY || process.env.MNEMONIC,
         `https://rpc-mumbai.maticvigil.com`
       ),
       network_id: 80001,
       confirmations: 2,
       timeoutBlocks: 200,
-      skipDryRun: true
+      skipDryRun: true,
+      chainId: 80001
     },
     polygon: {
       provider: () => new HDWalletProvider(
-        process.env.PRIVATE_KEY,
+        process.env.PRIVATE_KEY || process.env.MNEMONIC,
         `https://polygon-rpc.com`
       ),
       network_id: 137,
       confirmations: 2,
       timeoutBlocks: 200,
       skipDryRun: true,
-      gasPrice: 50000000000
+      gasPrice: 50000000000,
+      chainId: 137
     }
   },
   compilers: {
@@ -40,5 +42,10 @@ module.exports = {
         }
       }
     }
+  },
+  plugins: ['truffle-plugin-verify'],
+  api_keys: {
+    polygonscan: process.env.POLYGONSCAN_API_KEY
   }
 };
+
