@@ -1,4 +1,4 @@
-const { supabase } = require('../server');
+const supabase = require('../lib/supabase');
 const sgMail = require('@sendgrid/mail');
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);

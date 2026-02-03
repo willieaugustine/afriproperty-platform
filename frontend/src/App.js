@@ -87,12 +87,23 @@ function App() {
           property.tokenContract
         );
         const soldTokens = await tokenContract.methods.totalSupply().call();
+        // Try to read claimable rental income for this property (if contract exposes it)
+        let claimable = '0';
+        try {
+          if (platformContract.methods.claimable) {
+            claimable = await platformContract.methods.claimable(i).call();
+          }
+        } catch (e) {
+          // method may not exist or call may fail; default to '0'
+          claimable = '0';
+        }
         
         propertiesData.push({
           ...property,
           tokenPrice,
           soldTokens,
-          percentageSold: (soldTokens / property.tokenSupply * 100).toFixed(2)
+          percentageSold: (soldTokens / property.tokenSupply * 100).toFixed(2),
+          claimable
         });
       }
 
@@ -153,6 +164,20 @@ function App() {
       alert("Failed to claim income. You may not have any available.");
     }
     setLoading(false);
+  };
+
+  const refreshClaimable = async (propertyId) => {
+    if (!platform || !web3) return;
+    try {
+      let claim = '0';
+      if (platform.methods.claimable) {
+        claim = await platform.methods.claimable(propertyId).call();
+      }
+      setProperties(prev => prev.map(p => p.id === propertyId ? { ...p, claimable: claim } : p));
+    } catch (err) {
+      console.warn('refreshClaimable failed', err);
+      setProperties(prev => prev.map(p => p.id === propertyId ? { ...p, claimable: '0' } : p));
+    }
   };
 
   const getStatusColor = (status) => {
@@ -285,14 +310,42 @@ function App() {
                       <span className="progress-text">{property.percentageSold}% Funded</span>
                     </div>
 
-                    {property.status === '2' && (
-                      <button 
-                        className="btn-invest"
-                        onClick={() => setSelectedProperty(property)}
-                      >
-                        Invest Now
-                      </button>
-                    )}
+                    <div className="property-actions">
+                      {property.status === '2' && (
+                        <>
+                          <button 
+                            className="btn-invest"
+                            onClick={() => setSelectedProperty(property)}
+                          >
+                            Invest Now
+                          </button>
+
+                          <div className="claim-block">
+                            <div className="claim-amount">
+                              Claimable: {web3 ? parseFloat(web3.utils.fromWei(property.claimable || '0', 'ether')).toFixed(6) : '0.000000'} ETH
+                            </div>
+                            {account && (
+                              <>
+                                <button
+                                  className="btn-claim"
+                                  onClick={() => claimRentalIncome(property.id)}
+                                  disabled={loading || (property.claimable === '0' || property.claimable === undefined)}
+                                >
+                                  {loading ? 'Processing...' : 'Claim'}
+                                </button>
+                                <button
+                                  className="btn-refresh"
+                                  onClick={() => refreshClaimable(property.id)}
+                                  disabled={loading}
+                                >
+                                  Refresh
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

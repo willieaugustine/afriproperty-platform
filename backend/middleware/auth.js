@@ -1,4 +1,4 @@
-const { supabase } = require('../server');
+const supabase = require('../lib/supabase');
 
 async function authenticateUser(req, res, next) {
   try {
@@ -28,7 +28,7 @@ async function authenticateUser(req, res, next) {
   }
 }
 
-async function requireRole(roles) {
+function requireRole(roles) {
   return async (req, res, next) => {
     try {
       const { data: userRoles, error } = await supabase
@@ -51,7 +51,7 @@ async function requireRole(roles) {
   };
 }
 
-async function requireKYC(tier = 1) {
+function requireKYC(tier = 1) {
   return async (req, res, next) => {
     try {
       const { data: profile, error } = await supabase

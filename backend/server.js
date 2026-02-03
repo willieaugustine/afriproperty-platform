@@ -4,15 +4,12 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const { createClient } = require('@supabase/supabase-js');
+// Supabase client moved to backend/lib/supabase.js to avoid circular requires
+const supabase = require('./lib/supabase');
 
 const app = express();
 
-// Initialize Supabase
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+// supabase client is provided by backend/lib/supabase.js
 
 // Middleware
 app.use(helmet());
@@ -38,6 +35,7 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/kyc', require('./routes/kyc'));
 app.use('/api/uploads', require('./routes/uploads'));
 app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/db-check', require('./routes/dbcheck'));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -54,9 +52,12 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
+}
 
 module.exports = { app, supabase };
 

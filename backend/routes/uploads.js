@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { supabase } = require('../server');
+const supabase = require('../lib/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const sharp = require('sharp');
 const path = require('path');

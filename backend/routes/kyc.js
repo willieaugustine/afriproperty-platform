@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const { supabase } = require('../server');
+const supabase = require('../lib/supabase');
 const { authenticateUser } = require('../middleware/auth');
 
 // Submit KYC
